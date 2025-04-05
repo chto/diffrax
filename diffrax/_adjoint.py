@@ -1189,4 +1189,5 @@ class ReversibleAdjoint(AbstractAdjoint):
             **kwargs,
         )
         final_state = _only_transpose_ys(final_state)
+
         return final_state, aux_stats
