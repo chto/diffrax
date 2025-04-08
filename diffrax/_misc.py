@@ -38,7 +38,7 @@ def _fill_forward(
     return yi, yi
 
 
-@jax.jit
+#@jax.jit
 def fill_forward(
     ys: Shaped[Array, " times *channels"],
     replace_nans_at_start: Optional[Shaped[Array, " *channels"]] = None,
