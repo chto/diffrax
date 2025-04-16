@@ -970,12 +970,28 @@ def _loop_reversible_bwd(
     del residuals
 
     grad_final_state, _ = grad_final_state__aux_stats
+
+
+
+
     saveat_ts = save_state.ts
     ys = save_state.ys
     saveat_ts_index = save_state.saveat_ts_index - 1
+
+
+
     grad_ys = grad_final_state.save_state.ys
+
+
+    y, args, terms = y__args__terms
+    del y__args__terms
+    #_, f_vjp_chto = jax.vjp(saveat.subs.fn, saveat_ts[saveat_ts_index] , y, args)
+    #_, grad_ys, _ = jax.vmap(f_vjp_chto, in_axes=0)(grad_ys)
+
     grad_ys = jtu.tree_map(_materialise_none, ys, grad_ys)
 
+        #_, f_vjp_chto = jax.vjp(saveat.subs.fn, saveat_ts[-1] , y1, args)
+        #grad_y1 = (ω(f_vjp_chto(grad_ys[-1])[1])).ω
     if saveat.subs.t1:
         grad_y1 = (ω(grad_ys)[-1]).ω
     else:
@@ -986,8 +1002,6 @@ def _loop_reversible_bwd(
 
     del grad_final_state, grad_final_state__aux_stats
 
-    y, args, terms = y__args__terms
-    del y__args__terms
 
     diff_state = eqx.filter(solver_state, eqx.is_inexact_array)
     diff_args = eqx.filter(args, eqx.is_inexact_array)
@@ -1035,7 +1049,11 @@ def _loop_reversible_bwd(
         def _body_fun(inner_state):
             saveat_ts_index, grad_dense_info = inner_state
             t = saveat_ts[saveat_ts_index]
-            grad_y = (ω(grad_ys)[saveat_ts_index]).ω
+
+    #_, f_vjp_chto = jax.vjp(saveat.subs.fn, saveat_ts[saveat_ts_index] , y, args)
+    #_, grad_ys, _ = jax.vmap(f_vjp_chto, in_axes=0)(grad_ys)
+            _, f_vjp_chto = jax.vjp(saveat.subs.fn, t0 , y0, args)
+            grad_y = (ω(f_vjp_chto(grad_ys[saveat_ts_index])[1])).ω
             _, interp_vjp = eqx.filter_vjp(interpolate, t, t0, t1, dense_info)
             _, _, _, dgrad_dense_info = interp_vjp(grad_y)
             grad_dense_info = eqx.apply_updates(grad_dense_info, dgrad_dense_info)
@@ -1158,7 +1176,7 @@ class ReversibleAdjoint(AbstractAdjoint):
             != jtu.tree_structure(0)
             or saveat.dense
             or saveat.subs.steps
-            or (saveat.subs.fn is not save_y)
+            #or (saveat.subs.fn is not save_y)
         ):
             raise ValueError(
                 """`ReversibleAdjoint` is only compatible with the following `SaveAt` 

@@ -1231,11 +1231,12 @@ def diffeqsolve(
 
     def _subsaveat_direction_fn(x):
         if _is_subsaveat(x):
-            if x.fn is not save_y:
-                direction_fn = lambda t, y, args: x.fn(direction * t, y, args)
-                return eqx.tree_at(lambda x: x.fn, x, direction_fn)
-            else:
-                return x
+            #if x.fn is not save_y:
+            #    direction_fn = lambda t, y, args: x.fn(direction * t, y, args)
+            #    return eqx.tree_at(lambda x: x.fn, x, direction_fn)
+            #else:
+            #    return x
+            return x
         else:
             return x
 
