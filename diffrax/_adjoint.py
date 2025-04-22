@@ -1031,6 +1031,7 @@ def _loop_reversible_bwd(
 
         t1 = ts[ts_index]
         t0 = ts[ts_index - 1]
+        #jax.debug.print("grad step {x}, {y}", x=t0, y=t1)
 
         y0, dense_info, solver_state = solver.backward_step(
             terms, t0, t1, y1, args, solver_state, False
@@ -1052,8 +1053,10 @@ def _loop_reversible_bwd(
 
     #_, f_vjp_chto = jax.vjp(saveat.subs.fn, saveat_ts[saveat_ts_index] , y, args)
     #_, grad_ys, _ = jax.vmap(f_vjp_chto, in_axes=0)(grad_ys)
-            _, f_vjp_chto = jax.vjp(saveat.subs.fn, t0 , y0, args)
+            yin=interpolate(t, t0, t1, dense_info)
+            _, f_vjp_chto = jax.vjp(saveat.subs.fn, t, yin, args)
             grad_y = (ω(f_vjp_chto(grad_ys[saveat_ts_index])[1])).ω
+            #grad_y = (ω(grad_ys)[saveat_ts_index]).ω
             _, interp_vjp = eqx.filter_vjp(interpolate, t, t0, t1, dense_info)
             _, _, _, dgrad_dense_info = interp_vjp(grad_y)
             grad_dense_info = eqx.apply_updates(grad_dense_info, dgrad_dense_info)
@@ -1102,6 +1105,7 @@ def _loop_reversible_bwd(
         grad_args,
         grad_terms,
     )
+    #jax.debug.print("ts, {x}, ts_final_index {y}, saveat_ts_index {z}", x=(ts[0], ts[ts_final_index]), y=ts_final_index, z=saveat_ts_index)
 
     state = jax.lax.while_loop(cond_fun, grad_step, state)
     _, _, y0, _, grad_y0, grad_state, grad_args, grad_terms = state

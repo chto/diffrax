@@ -89,7 +89,7 @@ class LeapfrogMidpoint(AbstractReversibleSolver):
         control = terms.contr(tm1, t1)
         y1 = (ym1**ω + terms.vf_prod(t0, y0, args, control) ** ω).ω
         dense_info = dict(y0=y0, y1=y1)
-        solver_state = (t0, y0, dt)
+        solver_state = (t0, y0, t1-t0)
         return y1, None, dense_info, solver_state, RESULTS.successful
 
     def backward_step(
